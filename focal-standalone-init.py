@@ -519,16 +519,14 @@ if __name__ == '__main__':
             '/usr/local/bin/docker-compose'
         ])
         exit_notes.append(
-            'Docker and docker-compose were installed successfully! check the guide at: https://docs.docker.com/get-started/overview/')
+            'Docker and docker-compose were installed successfully! read the guide at: https://docs.docker.com/get-started/overview/')
 
     if args.install_netdata is True:
         log.info('installing netdata')
-        run_shell_command([
-            'curl',
+        download_file(
             'https://my-netdata.io/kickstart.sh',
-            '-o',
-            'netdata-install.sh'
-        ], cwd=TEMP_DIR)
+            TEMP_DIR.joinpath('netdata-install.sh')
+        )
         run_shell_command([
             '/usr/bin/env',
             'bash',
@@ -537,11 +535,11 @@ if __name__ == '__main__':
         ], cwd=TEMP_DIR)
         run_shell_command([
             'systemctl',
-            'start',
+            'enable',
             'netdata'
         ])
         exit_notes.append(
-            'Netdata was installed, establish a connection via ssh tunnel like this: ssh -L 19999:localhost:19999 $SETUP_HOSTNAME@$SETUP_USERNAME and visit http://127.0.0.1:19999/ in your browser. read the guide at: check the guide at https://github.com/netdata/netdata/blob/master/docs/quickstart/single-node.md')
+            'Netdata was installed, establish a connection via ssh tunnel like this: ssh -L 19999:localhost:19999 ' + args.username + '@' + args.hostname + ' and visit http://127.0.0.1:19999/ in your browser. read the guide at: https://github.com/netdata/netdata/blob/master/docs/quickstart/single-node.md')
 
     log.info('clean up apt packages')
     apt_clean()
