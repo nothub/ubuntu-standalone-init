@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from typing import List
+from urllib.error import HTTPError
 
 if sys.version_info.major != 3 or sys.version_info.minor < 8:
     print('please run with python 3.8+', file=sys.stderr)
@@ -64,8 +65,16 @@ def run_shell_command(command: list, cwd=None, env=None, pipe_input=None):
 def download_file(url: str, path: Path) -> Path:
     log.debug('downloading: ' + url + ' to: ' + str(path))
     delete_path_object(path)
-    file_path, _ = urllib.request.urlretrieve(url, path)
-    return Path(file_path).resolve()
+    try:
+        _, _ = urllib.request.urlretrieve(url, path)
+    except HTTPError:
+        run_shell_command([
+            'curl',
+            url,
+            '-o',
+            str(path)
+        ], cwd=TEMP_DIR)
+    return Path(path).resolve()
 
 
 def find_in_file(string: str, path: Path) -> bool:
