@@ -23,28 +23,28 @@ import urllib.request
 TEMP_DIR = Path('/tmp/focal-standalone-init').resolve()
 
 
-def apt_update() -> bool:
-    return run_shell_command(['apt-get', 'update'])
+def apt_update():
+    run_shell_command(['apt-get', 'update'])
 
 
-def apt_upgrade() -> bool:
-    return run_shell_command(['apt-get', '-qy', '--with-new-pkgs', 'upgrade'])
+def apt_upgrade():
+    run_shell_command(['apt-get', '-qy', '--with-new-pkgs', 'upgrade'])
 
 
-def apt_install(packages: list) -> bool:
-    return run_shell_command(['apt-get', '-qy', 'install'] + packages,
-                             env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
+def apt_install(packages: list):
+    run_shell_command(['apt-get', '-qy', 'install'] + packages,
+                      env={**os.environ, 'DEBIAN_FRONTEND': 'noninteractive'})
 
 
-def apt_purge(packages: list) -> bool:
-    return run_shell_command(['apt-get', '-qy', 'purge'] + packages)
+def apt_purge(packages: list):
+    run_shell_command(['apt-get', '-qy', 'purge'] + packages)
 
 
-def apt_clean() -> bool:
-    return run_shell_command(['apt-get', '-qy', 'clean']) and run_shell_command(['apt-get', '-qy', 'autoremove'])
+def apt_clean():
+    run_shell_command(['apt-get', '-qy', 'clean']) and run_shell_command(['apt-get', '-qy', 'autoremove'])
 
 
-def run_shell_command(command: list, cwd=None, env=None, pipe_input=None) -> bool:
+def run_shell_command(command: list, cwd=None, env=None, pipe_input=None):
     if cwd is None:
         cwd = Path('.').resolve()
     log.debug('running: ' + str(command) + ' in: ' + str(cwd))
@@ -59,7 +59,6 @@ def run_shell_command(command: list, cwd=None, env=None, pipe_input=None) -> boo
         log.debug('stderr: ' + str(proc.stderr), file=sys.stderr)
     if proc.returncode != 0:
         on_panic('exit code ' + str(proc.returncode) + ' for: ' + str(cwd) + ' ' + str(command))
-    return proc.returncode == 0
 
 
 def download_file(url: str, path: Path) -> Path:
@@ -93,10 +92,10 @@ def write_lines(lines: list, path: Path):
 
 
 def has_content(string: str) -> bool:
-    return len(strip_except_content(string)) > 0
+    return len(remove_non_content(string)) > 0
 
 
-def strip_except_content(string: str) -> str:
+def remove_non_content(string: str) -> str:
     return string \
         .replace('\r', '') \
         .replace('\n', '') \
@@ -107,8 +106,8 @@ def strip_except_content(string: str) -> str:
 
 
 def add_or_replace(pattern: str, replacement: str, path: Path) -> bool:
-    pattern_stripped = strip_except_content(pattern)
-    replacement_stripped = strip_except_content(replacement)
+    pattern_stripped = remove_non_content(pattern)
+    replacement_stripped = remove_non_content(replacement)
 
     # remove trailing empty lines
     lines_in = read_lines(path)
@@ -122,10 +121,10 @@ def add_or_replace(pattern: str, replacement: str, path: Path) -> bool:
     found = False
     for line in lines_in:
         # do nothing if present
-        if strip_except_content(line).startswith(replacement_stripped):
+        if remove_non_content(line).startswith(replacement_stripped):
             return True
         # replace line while keeping prefix whitespaces
-        if strip_except_content(line).startswith(pattern_stripped):
+        if remove_non_content(line).startswith(pattern_stripped):
             prefix = re.search('^([\\t ]*).*$', line).group(1)
             lines_out.append(prefix + replacement)
             found = True
