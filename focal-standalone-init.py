@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+from typing import List
 
 if sys.version_info.major != 3 or sys.version_info.minor < 8:
     print('please run with python 3.8+', file=sys.stderr)
@@ -75,7 +76,7 @@ def find_in_file(string: str, path: Path) -> bool:
     return False
 
 
-def read_lines(path):
+def read_lines(path) -> List[str]:
     if not path.is_file():
         on_panic('not a valid file: ' + str(path))
     with open(path) as file:
