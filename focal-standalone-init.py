@@ -626,6 +626,8 @@ if __name__ == '__main__':
     log.info('restart sshd')
     run_shell_command(['systemctl', 'restart', 'sshd'])
 
+    delete_path_object(TEMP_DIR)
+
     exit_notes.append('Please reboot the machine for certain changes to take effect!')
 
     print('--------')
