@@ -210,15 +210,6 @@ def parse_args():
         help='hostname (for mta to work, this should be a domain pointing to this box)'
     )
 
-    required_parser.add_argument(
-        '-ip', '--ip-address',
-        action='store',
-        type=str,
-        required=True,
-        metavar='IP',
-        help='external ip address (ipv4 only)'
-    )
-
     root_parser.add_argument(
         '--locale',
         action='store',

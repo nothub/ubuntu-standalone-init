@@ -1,5 +1,5 @@
 ```
-usage: focal-standalone-init [-h] -user USERNAME -ssh SSHPUBKEY -mail EMAIL -host HOSTNAME -ip IP [--locale LOCALE] [--timezone TIMEZONE] [--harden-network] [--install-postfix] [--install-docker] [--install-netdata] [-v]
+usage: focal-standalone-init [-h] -user USERNAME -ssh SSHPUBKEY -mail EMAIL -host HOSTNAME [--locale LOCALE] [--timezone TIMEZONE] [--harden-network] [--install-postfix] [--install-docker] [--install-netdata] [-v]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -20,8 +20,6 @@ required arguments:
                         admin email address (if mta is installed, admin and root mail get forwarded here)
   -host HOSTNAME, --hostname HOSTNAME
                         hostname (for mta to work, this should be a domain pointing to this box)
-  -ip IP, --ip-address IP
-                        external ip address (ipv4 only)
 ```
 ---
 ```
@@ -30,7 +28,6 @@ sudo ./focal-standalone-init.py \
 --sshpubkey "ssh-ed25519 AAAA....snWK hub@desktop" \
 --forward-mail some@mail.com \
 --hostname mydomain.com \
---ip-address 111.222.112.221 \
 --locale en_US.UTF-8 \
 --timezone Europe/Berlin \
 --harden-network \
