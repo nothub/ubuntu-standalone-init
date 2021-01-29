@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 from typing import List
-from urllib.error import HTTPError
 
 if sys.version_info.major != 3 or sys.version_info.minor < 8:
     print('please run with python 3.8+', file=sys.stderr)
@@ -19,7 +18,6 @@ import shutil
 import string
 import subprocess as sp
 import sys
-import urllib.request
 
 TEMP_DIR = Path('/tmp/focal-standalone-init').resolve()
 
@@ -65,15 +63,12 @@ def run_shell_command(command: list, cwd=None, env=None, pipe_input=None):
 def download_file(url: str, path: Path) -> Path:
     log.debug('downloading: ' + url + ' to: ' + str(path))
     delete_path_object(path)
-    try:
-        _, _ = urllib.request.urlretrieve(url, path)
-    except HTTPError:
-        run_shell_command([
-            'curl',
-            url,
-            '-o',
-            str(path)
-        ], cwd=TEMP_DIR)
+    run_shell_command([
+        'curl',
+        url,
+        '-o',
+        str(path)
+    ], cwd=TEMP_DIR)
     return Path(path).resolve()
 
 
@@ -391,7 +386,7 @@ if __name__ == '__main__':
         'apt-utils',
         'bash-completion',
         'ca-certificates',
-        'curl',
+        'curl',  # used in download_file
         'debconf-utils',
         'fail2ban',
         'git',
