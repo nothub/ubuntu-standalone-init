@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# replacement for: https://gist.github.com/nothub/dd6596a193264a7a88a9dbfaff29eba4#file-focal-init-setup-sh
 import sys
 
 if sys.version_info.major != 3 or sys.version_info.minor < 8:
@@ -21,80 +20,6 @@ import sys
 import urllib.request
 
 TEMP_DIR = Path('/tmp/focal-standalone-init').resolve()
-
-
-def strip_except_content(string: str) -> str:
-    return string \
-        .replace('\r', '') \
-        .replace('\n', '') \
-        .replace('\f', '') \
-        .replace('\v', '') \
-        .replace('\t', '') \
-        .replace(' ', '')
-
-
-def has_content(string: str) -> bool:
-    return len(strip_except_content(string)) > 0
-
-
-def find_in_file(string: str, path: Path) -> bool:
-    lines = read_lines(path)
-
-    for line in lines:
-        if string in line:
-            return True
-
-    return False
-
-
-def write_lines(lines: list, path: Path):
-    with open(path, 'w') as file:
-        for line in lines:
-            file.write(line + '\n')
-        file.close()
-
-
-def add_or_replace(pattern: str, replacement: str, path: Path) -> bool:
-    pattern_stripped = strip_except_content(pattern)
-    replacement_stripped = strip_except_content(replacement)
-
-    lines_in = read_lines(path)
-    for line in reversed(lines_in):
-        if not has_content(line):
-            del lines_in[-1]
-        else:
-            break
-
-    lines_out = list()
-    found = False
-    for line in lines_in:
-        if strip_except_content(line).startswith(replacement_stripped):
-            return True
-        if strip_except_content(line).startswith(pattern_stripped):
-            prefix = re.search('^([\\t ]*).*$', line).group(1)
-            lines_out.append(prefix + replacement)
-            found = True
-        else:
-            lines_out.append(line)
-
-    if not found:
-        lines_out.append(replacement)
-
-    with open(path, 'w') as file:
-        for line in lines_out:
-            file.write(line + '\n')
-        file.close()
-
-    return True
-
-
-def read_lines(path):
-    if not path.is_file():
-        on_panic('not a valid file: ' + str(path))
-    with open(path) as file:
-        lines = file.read().split('\n')
-        file.close()
-    return lines
 
 
 def apt_update() -> bool:
@@ -143,9 +68,75 @@ def download_file(url: str, path: Path) -> Path:
     return Path(file_path).resolve()
 
 
-def on_panic(message: str):
-    log.error(message, file=sys.stderr)
-    exit(1)
+def find_in_file(string: str, path: Path) -> bool:
+    for line in read_lines(path):
+        if string in line:
+            return True
+    return False
+
+
+def read_lines(path):
+    if not path.is_file():
+        on_panic('not a valid file: ' + str(path))
+    with open(path) as file:
+        lines = file.read().split('\n')
+        file.close()
+    return lines
+
+
+def write_lines(lines: list, path: Path):
+    with open(path, 'w') as file:
+        for line in lines:
+            file.write(line + '\n')
+        file.close()
+
+
+def has_content(string: str) -> bool:
+    return len(strip_except_content(string)) > 0
+
+
+def strip_except_content(string: str) -> str:
+    return string \
+        .replace('\r', '') \
+        .replace('\n', '') \
+        .replace('\f', '') \
+        .replace('\v', '') \
+        .replace('\t', '') \
+        .replace(' ', '')
+
+
+def add_or_replace(pattern: str, replacement: str, path: Path) -> bool:
+    pattern_stripped = strip_except_content(pattern)
+    replacement_stripped = strip_except_content(replacement)
+
+    # remove trailing empty lines
+    lines_in = read_lines(path)
+    for line in reversed(lines_in):
+        if not has_content(line):
+            del lines_in[-1]
+        else:
+            break
+
+    lines_out = list()
+    found = False
+    for line in lines_in:
+        # do nothing if present
+        if strip_except_content(line).startswith(replacement_stripped):
+            return True
+        # replace line while keeping prefix whitespaces
+        if strip_except_content(line).startswith(pattern_stripped):
+            prefix = re.search('^([\\t ]*).*$', line).group(1)
+            lines_out.append(prefix + replacement)
+            found = True
+        else:
+            lines_out.append(line)
+
+    if not found:
+        lines_out.append(replacement)
+
+    write_lines(lines_out, path)
+
+    return True
 
 
 def delete_path_object(path: Path):
@@ -171,6 +162,11 @@ def user_exists(name: str) -> bool:
 def random_string(length=20) -> str:
     return ''.join(
         random.SystemRandom().choice(string.ascii_letters + string.digits + '!?%*+-_') for _ in range(length))
+
+
+def on_panic(message: str):
+    log.error(message, file=sys.stderr)
+    exit(1)
 
 
 def parse_args():
